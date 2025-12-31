@@ -1,211 +1,218 @@
-import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Navigation, Clock, Heart, Share2, MapPin } from 'lucide-react';
-import { mockRestaurants, mockReviews } from '../data/mockData';
-import RatingStars from '../components/shared/RatingStars';
-import PriceIndicator from '../components/shared/PriceIndicator';
-import { useUser } from '../contexts/UserContext';
-import { useUI } from '../contexts/UIContext';
+import { mockRestaurants } from '@/data/mockData';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Star, MapPin, Phone, Clock, Heart, Share2, ChevronLeft } from 'lucide-react';
 
-const RestaurantDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const restaurant = mockRestaurants.find(r => r.id === id);
-  const reviews = mockReviews.filter(r => r.restaurantId === id);
-  const { user, toggleFavorite } = useUser();
-  const { addToast } = useUI();
-  const [selectedPhoto, setSelectedPhoto] = useState(0);
+export function RestaurantDetails() {
+  const { id } = useParams();
+  const restaurant = mockRestaurants.find((r) => r.id === id);
 
   if (!restaurant) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-heading font-semibold text-foreground mb-2">
-            Restaurant not found
-          </h2>
-          <Link to="/" className="text-accent hover:underline">
-            Back to home
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">Restaurant not found</h1>
+        <Link to="/results">
+          <Button>Back to results</Button>
+        </Link>
       </div>
     );
   }
 
-  const isFavorite = user?.favorites.includes(restaurant.id);
-
-  const handleFavoriteClick = () => {
-    toggleFavorite(restaurant.id);
-    addToast(
-      isFavorite ? 'Removed from favorites' : 'Added to favorites',
-      'success'
-    );
-  };
-
   return (
-    <div className="flex-1">
-      <div className="relative h-96 bg-muted">
-        <img
-          src={restaurant.photos[selectedPhoto]}
-          alt={restaurant.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <Link
-            to="/"
-            className="p-2 bg-card/90 backdrop-blur-sm rounded-full hover:bg-card transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-foreground" />
+    <div className="min-h-screen bg-muted/30">
+      {/* Header */}
+      <div className="bg-background border-b">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-4">
+          <Link to="/results">
+            <Button variant="ghost" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to results
+            </Button>
           </Link>
-          <div className="flex gap-2">
-            <button
-              onClick={handleFavoriteClick}
-              className="p-2 bg-card/90 backdrop-blur-sm rounded-full hover:bg-card transition-colors"
-            >
-              <Heart
-                className={`w-6 h-6 ${
-                  isFavorite ? 'fill-red-500 text-red-500' : 'text-foreground'
-                }`}
-              />
-            </button>
-            <button className="p-2 bg-card/90 backdrop-blur-sm rounded-full hover:bg-card transition-colors">
-              <Share2 className="w-6 h-6 text-foreground" />
-            </button>
-          </div>
-        </div>
-
-        <div className="absolute bottom-4 left-4 right-4">
-          <h1 className="text-4xl font-heading font-light text-white mb-2">
-            {restaurant.name}
-          </h1>
-          <div className="flex items-center gap-4 text-white">
-            <span className="text-lg">{restaurant.cuisine}</span>
-            <PriceIndicator level={restaurant.priceLevel} />
-            {restaurant.isOpen ? (
-              <span className="px-3 py-1 bg-green-500 text-white text-sm font-medium rounded-full">
-                Open now
-              </span>
-            ) : (
-              <span className="px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-full">
-                Closed
-              </span>
-            )}
-          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-card border-b border-border">
-        {restaurant.photos.map((photo, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedPhoto(index)}
-            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-              selectedPhoto === index
-                ? 'border-accent'
-                : 'border-transparent opacity-60 hover:opacity-100'
-            }`}
-          >
-            <img src={photo} alt="" className="w-full h-full object-cover" />
-          </button>
-        ))}
+      {/* Photo Gallery */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 max-h-[500px]">
+        <div className="md:col-span-2">
+          <img
+            src={restaurant.photos[0]}
+            alt={restaurant.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="grid grid-rows-2 gap-2">
+          {restaurant.photos.slice(1, 3).map((photo, idx) => (
+            <img
+              key={idx}
+              src={photo}
+              alt={`${restaurant.name} ${idx + 2}`}
+              className="w-full h-full object-cover"
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Info Header */}
             <div>
-              <h2 className="text-2xl font-heading font-light text-foreground mb-4">
-                About
-              </h2>
-              <div className="flex items-center gap-6 mb-4">
-                <RatingStars rating={restaurant.rating} size="lg" />
-                <span className="text-muted-foreground">
-                  {restaurant.reviewCount} reviews
-                </span>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2">{restaurant.name}</h1>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge variant="secondary" className="text-base">
+                      {restaurant.cuisine}
+                    </Badge>
+                    <span className="text-lg">{restaurant.priceRange}</span>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-5 w-5 fill-accent text-accent" />
+                      <span className="font-semibold text-lg">{restaurant.rating}</span>
+                      <span className="text-muted-foreground">
+                        ({restaurant.reviewCount} reviews)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="icon" variant="outline">
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                  <Button size="icon" variant="outline">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
-              <p className="text-foreground leading-relaxed">
-                Experience exceptional {restaurant.cuisine} cuisine in a welcoming atmosphere. 
-                Our chefs use only the finest ingredients to create memorable dishes that will 
-                delight your taste buds.
-              </p>
+
+              <p className="text-lg text-muted-foreground">{restaurant.description}</p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-heading font-light text-foreground mb-4">
-                Reviews
-              </h2>
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b border-border pb-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <img
-                        src={review.userAvatar}
-                        alt={review.userName}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-medium text-foreground">{review.userName}</h4>
-                          <span className="text-sm text-muted-foreground">{review.date}</span>
-                        </div>
-                        <RatingStars rating={review.rating} size="sm" showNumber={false} />
+            {/* Tabs */}
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="photos">Photos</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4 mt-6">
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Address</p>
+                        <p className="text-muted-foreground">{restaurant.address}</p>
+                        <p className="text-sm text-muted-foreground">{restaurant.distance} km away</p>
                       </div>
                     </div>
-                    <p className="text-foreground leading-relaxed">{review.comment}</p>
-                    <button className="mt-2 text-sm text-muted-foreground hover:text-accent transition-colors">
-                      Helpful ({review.helpful})
-                    </button>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Phone</p>
+                        <p className="text-muted-foreground">{restaurant.phone}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Hours</p>
+                        <p className={restaurant.isOpen ? 'text-emerald-600' : 'text-destructive'}>
+                          {restaurant.hours}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="reviews" className="space-y-4 mt-6">
+                {restaurant.reviews.map((review) => (
+                  <Card key={review.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar>
+                          <AvatarImage src={review.avatar} />
+                          <AvatarFallback>{review.author[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <p className="font-semibold">{review.author}</p>
+                              <p className="text-sm text-muted-foreground">{review.date}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < review.rating
+                                      ? 'fill-accent text-accent'
+                                      : 'text-muted-foreground'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground">{review.text}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-              </div>
-            </div>
+              </TabsContent>
+
+              <TabsContent value="photos" className="mt-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {restaurant.photos.map((photo, idx) => (
+                    <img
+                      key={idx}
+                      src={photo}
+                      alt={`${restaurant.name} ${idx + 1}`}
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
-                Information
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Address</p>
-                    <p className="text-sm text-muted-foreground">{restaurant.address}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Phone</p>
-                    <p className="text-sm text-muted-foreground">{restaurant.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Hours</p>
-                    <p className="text-sm text-muted-foreground">{restaurant.hours}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <Button className="w-full" size="lg">
+                  Make reservation
+                </Button>
+                <Button variant="outline" className="w-full" size="lg">
+                  Call restaurant
+                </Button>
+                <Button variant="outline" className="w-full" size="lg">
+                  Get directions
+                </Button>
+              </CardContent>
+            </Card>
 
-            <div className="sticky top-4 space-y-3">
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                <Navigation className="w-5 h-5" />
-                Get directions
-              </button>
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent text-accent-foreground rounded-lg font-medium hover:bg-accent/90 transition-colors">
-                <Phone className="w-5 h-5" />
-                Call now
-              </button>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Location</h3>
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                  <MapPin className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-3">
+                  {restaurant.distance} km away
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default RestaurantDetails;
+}
